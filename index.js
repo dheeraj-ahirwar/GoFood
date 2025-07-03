@@ -1,12 +1,18 @@
+// index.js
 const express = require('express');
+const path = require('path');
 const connectDB = require('./db');
 
 const app = express();
 const port = 5000;
 
-// Connect to DB
+// Connect to MongoDB
 connectDB();
 
+// Middleware
+app.use(express.json());
+
+// CORS Setup
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header(
@@ -16,16 +22,18 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json());
-
-// Test route
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-// Routes
+// API Routes
 app.use('/api/auth', require('./Routes/Auth'));
 
+// Serve React Build Static Files (Assuming React is built inside 'frontend/build')
+app.use(express.static(path.join(__dirname, 'build')));
+
+// React Routing Fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// Start Server
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });
